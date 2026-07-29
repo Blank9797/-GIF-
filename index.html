@@ -197,6 +197,11 @@
     </div>
 
     <div class="ctrl-group">
+      <label>Stile di disegno</label>
+      <div class="chips" id="looks"></div>
+    </div>
+
+    <div class="ctrl-group">
       <label>Personaggio</label>
       <div class="faces" id="chars"></div>
     </div>
@@ -282,6 +287,7 @@
 
 <footer>Fatto con ♡ — Kirby è tondo, il testo è tuo</footer>
 
+<script src="real.js"></script>
 <script>
 'use strict';
 const TAU = Math.PI * 2;
@@ -400,6 +406,7 @@ const FXLIST = {
   coriandoli: 'Coriandoli 🎉', bolle: 'Bolle 🫧', neve: 'Neve ❄️', note: 'Note 🎵',
   fulmini: 'Fulmini ⚡', meteore: 'Meteore 🌠',
 };
+const LOOKS = { real: 'Realistico 🎨', kawaii: 'Kawaii 🍬' };
 const FRAMES = { nessuna: 'Nessuna', polaroid: 'Polaroid 📷', rotonda: 'Cerchio ⭕' };
 const FLUID = {
   fluida:  { label: 'Fluida (30 fps)',  delay: 3 },
@@ -409,9 +416,19 @@ const FLUID = {
 const PRESETS = ['いいえ', 'はい', 'だが断る', 'かわいい♡', 'おやすみ', 'ありがとう', 'ピカ⚡', 'ぐぅ…', 'NO!!', 'ぷぷぷ'];
 
 const state = {
-  text: 'いいえ', textStyle: 'auto', char: 'kirby', face: 'felice', pose: 'cartello',
+  text: 'いいえ', textStyle: 'auto', look: 'real', char: 'kirby', face: 'felice', pose: 'cartello',
   hat: 'nessuno', acc: 'nessuno', color: 'classico', anim: 'onda',
   bg: 'azzurro', fx: 'stelline', frame: 'nessuna', fluid: 'normale', size: 400, dur: 2,
+};
+
+/* Contesto di rendering corrente (impostato da drawScene, single-thread) */
+let LOOK = 'kawaii', CURCHAR = 'kirby', CURMAT = null, OFFC = null;
+const mixHex = (a, b, k) => {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const r = Math.round(((pa >> 16) & 255) + (((pb >> 16) & 255) - ((pa >> 16) & 255)) * k);
+  const g = Math.round(((pa >> 8) & 255) + (((pb >> 8) & 255) - ((pa >> 8) & 255)) * k);
+  const b2 = Math.round((pa & 255) + ((pb & 255) - (pa & 255)) * k);
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b2).toString(16).slice(1);
 };
 
 /* ============================== DISEGNO ============================== */
@@ -459,11 +476,19 @@ function heart(ctx, x, y, s) {
 }
 
 function shadowEllipse(ctx, x, y, rx, ry, a) {
+  if (LOOK === 'real' && typeof realShadow === 'function') return realShadow(ctx, x, y, rx, ry, a);
   ctx.fillStyle = `rgba(35, 32, 70, ${a})`;
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU); ctx.fill();
 }
 
 function gradEllipse(ctx, x, y, rx, ry, rot, c0, c1) {
+  if (LOOK === 'real' && typeof gradEllipse3D === 'function') {
+    gradEllipse3D(ctx, x, y, rx, ry, rot, {
+      c0, c1: mixHex(c0, c1, 0.5), c2: c1,
+      gloss: CURMAT ? CURMAT.gloss : 0.4,
+    });
+    return;
+  }
   ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
   const g = ctx.createRadialGradient(-rx * 0.25, -ry * 0.4, rx * 0.15, 0, 0, Math.max(rx, ry) * 1.15);
   g.addColorStop(0, c0); g.addColorStop(1, c1);
@@ -843,15 +868,27 @@ const CHAR_ART = {
 function body(ctx, o, C, cx, cy, r, sy = 1) {
   ctx.save(); ctx.translate(cx, cy); ctx.scale(1, sy);
   const art = CHAR_ART[o.char] || {};
+  const build = c => {
+    if (art.shape) { c.save(); c.scale(r / 150, r / 150); art.shape(c); c.restore(); }
+    else c.arc(0, 0, r, 0, TAU);
+  };
   if (art.back) { ctx.save(); ctx.scale(r / 150, r / 150); art.back(ctx, C); ctx.restore(); }
   const g = ctx.createRadialGradient(-40, -60, 30, 0, 10, r * 1.53);
   g.addColorStop(0, C.body0); g.addColorStop(0.55, C.body1); g.addColorStop(1, C.body2);
   ctx.fillStyle = g;
-  ctx.beginPath();
-  if (art.shape) { ctx.save(); ctx.scale(r / 150, r / 150); art.shape(ctx); ctx.restore(); }
-  else ctx.arc(0, 0, r, 0, TAU);
-  ctx.fill();
+  ctx.beginPath(); build(ctx); ctx.fill();
+  if (LOOK === 'real' && typeof shapeLighting === 'function') {
+    shapeLighting(ctx, build, 0, 0, r, {
+      c0: C.body0, c1: C.body1, c2: C.body2,
+      gloss: CURMAT ? CURMAT.gloss : 0.4,
+    });
+  }
   if (art.front) { ctx.save(); ctx.scale(r / 150, r / 150); art.front(ctx, C); ctx.restore(); }
+  if (LOOK === 'real' && typeof REAL_DETAIL !== 'undefined' && REAL_DETAIL[o.char]) {
+    ctx.save(); ctx.scale(r / 150, r / 150);
+    REAL_DETAIL[o.char](ctx, C);
+    ctx.restore();
+  }
   ctx.restore();
 }
 
@@ -941,6 +978,7 @@ function eyeOpen(t) { // sbatte le palpebre una volta per loop
 }
 
 function normalEye(ctx, x, y, rx, ry, rot, open) {
+  if (LOOK === 'real' && typeof realEye === 'function') return realEye(ctx, x, y, rx, ry, rot, open);
   ctx.save();
   ctx.translate(x, y); ctx.rotate(rot);
   if (open < 0.2) {
@@ -963,16 +1001,19 @@ function normalEye(ctx, x, y, rx, ry, rot, open) {
 }
 
 function closedHappyEye(ctx, x, y) { // ^ ^
+  if (LOOK === 'real' && typeof realClosedHappy === 'function') return realClosedHappy(ctx, x, y);
   ctx.strokeStyle = '#1A1A24'; ctx.lineWidth = 8; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(x, y + 10, 17, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
 }
 
 function closedSleepEye(ctx, x, y) { // ‿ ‿
+  if (LOOK === 'real' && typeof realClosedSleep === 'function') return realClosedSleep(ctx, x, y);
   ctx.strokeStyle = '#1A1A24'; ctx.lineWidth = 7; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(x, y - 6, 16, Math.PI * 0.18, Math.PI * 0.82); ctx.stroke();
 }
 
 function happyMouth(ctx, cx, my, w, d) {
+  if (LOOK === 'real' && typeof realHappyMouth === 'function') return realHappyMouth(ctx, cx, my, w, d);
   ctx.beginPath();
   ctx.moveTo(cx - w, my);
   ctx.quadraticCurveTo(cx, my - 12, cx + w, my);
@@ -1120,6 +1161,7 @@ function signBlock(ctx, o, t) {
   rr(ctx, -112, -50, 224, 100, 10); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 3;
   rr(ctx, -108, -46, 216, 92, 8); ctx.stroke();
+  if (LOOK === 'real' && typeof signRealPass === 'function') signRealPass(ctx);
   if (textTarget(o) === 'sign') {
     const L = layoutText(ctx, o.text, 194, 82, 58);
     if (L) drawTextBlock(ctx, L, o.anim, t, 0, 4, 'sign');
@@ -1632,6 +1674,12 @@ function faceKit(ctx, o, t, C, fx, fy, s, hatDY = 0) {
   ctx.restore();
 }
 
+/* ============================== MODULI REALISTICO ============================== */
+/* Qui vengono inserite le funzioni dello stile Realistico: gradEllipse3D, shapeLighting,
+   realEye, realClosedHappy, realClosedSleep, realHappyMouth, furArc, furPatch, stipple,
+   sheenBand, MATERIALS, realShadow, bgDepth, signRealPass, charRelight, REAL_DETAIL.
+   In loro assenza l'app ricade automaticamente nello stile Kawaii. */
+
 /* ============================== POSE ============================== */
 const POSES = {
   cartello: { label: 'Col cartello', bubble: [146, 88], draw(ctx, o, t, C) {
@@ -1838,6 +1886,9 @@ function drawFrame(ctx, o) {
 }
 
 function drawScene(ctx, px, o, t) {
+  LOOK = o.look || 'kawaii';
+  CURCHAR = o.char;
+  CURMAT = (LOOK === 'real' && typeof MATERIALS !== 'undefined' && MATERIALS[o.char]) ? MATERIALS[o.char] : null;
   ctx.save();
   ctx.scale(px / 500, px / 500);
   const bg = BGS[o.bg];
@@ -1845,8 +1896,18 @@ function drawScene(ctx, px, o, t) {
   if (bg.stops) bg.stops.forEach((c, i) => gBg.addColorStop(i / (bg.stops.length - 1), c));
   else { gBg.addColorStop(0, bg.top); gBg.addColorStop(1, bg.bot); }
   ctx.fillStyle = gBg; ctx.fillRect(0, 0, 500, 500);
+  if (LOOK === 'real' && typeof bgDepth === 'function') bgDepth(ctx);
   drawFX(ctx, o, t);
-  POSES[o.pose].draw(ctx, o, t, resolveC(o));
+  if (LOOK === 'real' && typeof charRelight === 'function') {
+    if (!OFFC) { OFFC = document.createElement('canvas'); OFFC.width = 500; OFFC.height = 500; }
+    const c2 = OFFC.getContext('2d');
+    c2.clearRect(0, 0, 500, 500);
+    POSES[o.pose].draw(c2, o, t, resolveC(o));
+    charRelight(c2);
+    ctx.drawImage(OFFC, 0, 0);
+  } else {
+    POSES[o.pose].draw(ctx, o, t, resolveC(o));
+  }
   drawFrame(ctx, o);
   const tgt = textTarget(o);
   if (tgt === 'fumetto') drawBubble(ctx, o, t, POSES[o.pose].bubble[0], POSES[o.pose].bubble[1], false);
@@ -2087,14 +2148,14 @@ function thumbGrid(elId, items, key, optsFor, onPick) {
     THUMBS.push({ ctx: cv.getContext('2d'), opts: () => optsFor(k) });
   }
 }
-function chipRow(elId, items, key) {
+function chipRow(elId, items, key, onPick) {
   const el = document.getElementById(elId);
   for (const [k, label] of Object.entries(items)) {
     const b = document.createElement('button');
     b.className = 'chip';
     b.dataset.k = key; b.dataset.v = k;
     b.textContent = label;
-    b.onclick = () => { state[key] = k; syncSel(); };
+    b.onclick = () => { state[key] = k; syncSel(); if (onPick) onPick(); };
     el.appendChild(b);
   }
 }
@@ -2117,6 +2178,7 @@ thumbGrid('faces', FACES, 'face', k => ({ ...thumbBase(), face: k }));
 thumbGrid('poses', POSES, 'pose', k => ({ ...thumbBase(), pose: k }));
 thumbGrid('hats', HATS, 'hat', k => ({ ...thumbBase(), hat: k }));
 thumbGrid('accs', ACCS, 'acc', k => ({ ...thumbBase(), acc: k }));
+chipRow('looks', LOOKS, 'look', renderThumbs);
 chipRow('styles', TEXTSTYLES, 'textStyle');
 chipRow('anims', ANIMS, 'anim');
 chipRow('fxs', FXLIST, 'fx');

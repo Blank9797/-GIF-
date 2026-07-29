@@ -20,6 +20,7 @@ Poi apri **http://localhost:8660** (funziona anche aprendo `index.html` direttam
 
 ## Cosa fa
 
+- **2 stili di disegno**: **Realistico 🎨** (default) — resa da action figure 3D: luci da studio, volumi, materiali (vinile, pelo, tessuto, gel), occhi lucidi con riflessi, ombre morbide, legno sul cartello — e **Kawaii 🍬** (piatto pastello)
 - **14 personaggi con le loro sagome originali**: Kirby, Pikachu (corpo a pera), Kabigon/Snorlax (testolina + pancione), Kuromi e My Melody (testona col cappuccio + corpicino), Jigglypuff, Eevee, Gengar (tutto spuntoni), Ditto (blob), Cinnamoroll (orecchie lunghe), Pompompurin, Totoro (ghianda), Doraemon (testa tonda + corpo con collare), Slime di Dragon Quest (goccia)
 - **15 facce**: sorridente, raggiante, innamorato, stelline, occhiolino, furbetto, timido, sorpreso, confuso, arrabbiato (💢), triste, disperato, annoiato, KO, assonnato (Zzz)
 - **11 pose**: col cartello, saluta, balla, salto, corsa, seduto, in volo, muscoli 💪, cuoricino, giravolta, relax
@@ -33,7 +34,7 @@ Poi apri **http://localhost:8660** (funziona anche aprendo `index.html` direttam
 
 ## Come funziona
 
-Tutto client-side in un solo `index.html`, zero dipendenze:
+Tutto client-side (`index.html` + `real.js`), zero dipendenze:
 
 - Personaggi disegnati proceduralmente in **canvas** (spazio 500×500 scalato); ogni personaggio è definito in `CHAR_ART` (parti dietro/davanti alla palla + forma corpo alternativa); pose e facce sono componibili, i costumi si agganciano alla testa
 - Tutte le animazioni sono periodiche in t∈[0,1) → loop perfetto
