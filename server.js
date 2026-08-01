@@ -22,13 +22,16 @@ http.createServer((req, res) => {
     req.on('data', c => { chunks.push(c); if (chunks.reduce((a, b) => a + b.length, 0) > 20e6) req.destroy(); });
     req.on('end', () => {
       const buf = Buffer.concat(chunks);
-      const dir = path.join(__dirname, 'samples');
+      const q = new URL(req.url, 'http://x').searchParams;
+      const sub = (q.get('dir') || '').replace(/[^a-z0-9-_]/gi, '');
+      const dir = path.join(__dirname, 'samples', sub);
       fs.mkdirSync(dir, { recursive: true });
-      const name = 'kirby-' + Date.now() + '.gif';
+      const custom = (q.get('name') || '').replace(/[^a-z0-9-_.]/gi, '');
+      const name = custom || 'kirby-' + Date.now() + '.gif';
       fs.writeFile(path.join(dir, name), buf, err => {
         if (err) { res.writeHead(500); return res.end(String(err)); }
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ saved: 'samples/' + name }));
+        res.end(JSON.stringify({ saved: 'samples/' + (sub ? sub + '/' : '') + name }));
       });
     });
     return;

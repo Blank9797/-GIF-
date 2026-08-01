@@ -211,6 +211,11 @@
     </div>
 
     <div class="ctrl-group">
+      <label>Onomatopee 🇯🇵 (preset)</label>
+      <div class="chips" id="onomaRow"></div>
+    </div>
+
+    <div class="ctrl-group">
       <label>Dove va il testo</label>
       <div class="chips" id="styles"></div>
     </div>
@@ -1426,6 +1431,50 @@ const PETS = {
   nessuno: 'Nessuno', uccellino: 'Uccellino', farfalla: 'Farfalla',
   fantasmino: 'Fantasmino', stellina: 'Stellina', ape: 'Ape',
 };
+
+/* Preset onomatopee giapponesi: ogni parola → la combinazione che la rappresenta */
+const ONOMA_BASE = {
+  textStyle: 'fumetto', char: 'kirby', hat: 'nessuno', acc: 'nessuno', color: 'classico',
+  sign: 'legno', font: 'tondo', fuse: 'nessuna', scene: 'nessuna', pattern: 'nessuno',
+  aura: 'nessuna', pet: 'nessuno', fx: 'nessuno', frame: 'nessuna', bg: 'azzurro',
+  anim: 'onda', pose: 'cartello', face: 'felice',
+};
+const ONOMATOPEE = [
+  { w: 'わくわく', it: 'eccitato, non vedo l\'ora', file: 'wakuwaku', o: { face: 'estatico', pose: 'salto', fx: 'stelline', bg: 'giallo', anim: 'rimbalzo' } },
+  { w: 'どきどき', it: 'batticuore', file: 'dokidoki', o: { face: 'colpito', pose: 'cuore', aura: 'cuori', bg: 'rosa', anim: 'battito' } },
+  { w: 'きらきら', it: 'scintillante', file: 'kirakira', o: { face: 'stelline', pose: 'ballo', fx: 'stelline', bg: 'notte', anim: 'arcobaleno' } },
+  { w: 'ぴかぴか', it: 'brillante, lampi', file: 'pikapika', o: { face: 'raggiante', pose: 'salto', aura: 'elettrica', fx: 'fulmini', color: 'giallo', anim: 'neon' } },
+  { w: 'ぷんぷん', it: 'sbuffare arrabbiati', file: 'punpun', o: { face: 'arrabbiato', aura: 'fuoco', bg: 'tramonto', anim: 'tremolio', textStyle: 'auto' } },
+  { w: 'いらいら', it: 'irritato', file: 'iraira', o: { face: 'sospettoso', aura: 'elettrica', bg: 'grafite', anim: 'tremolio', textStyle: 'auto' } },
+  { w: 'しくしく', it: 'piangere piano', file: 'shikushiku', o: { face: 'triste', pose: 'seduto', bg: 'notte', anim: 'onda' } },
+  { w: 'えーん', it: 'pianto a dirotto', file: 'een', o: { face: 'disperato', bg: 'grafite', anim: 'tremolio', textStyle: 'auto' } },
+  { w: 'めそめそ', it: 'frignare', file: 'mesomeso', o: { face: 'piagnucolone', pose: 'seduto', bg: 'grafite', anim: 'onda' } },
+  { w: 'うるうる', it: 'occhi lucidi', file: 'uruuru', o: { face: 'supplica', bg: 'lilla', anim: 'battito', textStyle: 'auto' } },
+  { w: 'ぐうぐう', it: 'russare', file: 'guuguu', o: { face: 'assonnato', pose: 'dormiente', textStyle: 'nuvoletta', bg: 'notte', fx: 'stelline', anim: 'onda' } },
+  { w: 'すやすや', it: 'dormire sereni', file: 'suyasuya', o: { face: 'bolla', pose: 'dormiente', scene: 'cameretta', textStyle: 'nuvoletta', anim: 'ferma' } },
+  { w: 'うとうと', it: 'appisolarsi', file: 'utouto', o: { face: 'stanco', pose: 'seduto', bg: 'lilla', anim: 'onda' } },
+  { w: 'ぐったり', it: 'esausto', file: 'guttari', o: { face: 'malato', pose: 'dormiente', bg: 'grafite', anim: 'ferma' } },
+  { w: 'ぺこぺこ', it: 'avere una fame...', file: 'pekopeko', o: { face: 'affamato', pose: 'seduto', bg: 'pesca', anim: 'onda' } },
+  { w: 'もぐもぐ', it: 'masticare', file: 'mogumogu', o: { face: 'mangione', pose: 'seduto', bg: 'pesca', anim: 'battito' } },
+  { w: 'ぺろぺろ', it: 'leccare', file: 'peropero', o: { face: 'occhiolino', bg: 'menta', anim: 'onda', textStyle: 'auto' } },
+  { w: 'にこにこ', it: 'sorridente', file: 'nikoniko', o: { face: 'felice', pose: 'saluto', scene: 'prato', anim: 'onda' } },
+  { w: 'うきうき', it: 'allegro e leggero', file: 'ukiuki', o: { face: 'gioia', pose: 'ballo', scene: 'sakura', anim: 'rimbalzo' } },
+  { w: 'るんるん', it: 'canticchiare felici', file: 'runrun', o: { face: 'canterino', pose: 'ballo', fx: 'note', anim: 'onda' } },
+  { w: 'ふわふわ', it: 'soffice, fluttuante', file: 'fuwafuwa', o: { face: 'sognante', pose: 'vola', fx: 'bolle', bg: 'lilla', anim: 'onda' } },
+  { w: 'ぽかぽか', it: 'tepore', file: 'pokapoka', o: { face: 'uwu', pose: 'seduto', scene: 'prato', fx: 'petali', anim: 'battito' } },
+  { w: 'びくびく', it: 'timoroso', file: 'bikubiku', o: { face: 'spaventato', bg: 'grafite', anim: 'tremolio', textStyle: 'auto' } },
+  { w: 'ぞくぞく', it: 'brividi', file: 'zokuzoku', o: { face: 'congelato', fx: 'neve', bg: 'notte', anim: 'tremolio', textStyle: 'auto' } },
+  { w: 'にやにや', it: 'sogghignare', file: 'niyaniya', o: { face: 'furbetto', bg: 'lilla', anim: 'gira', textStyle: 'auto' } },
+  { w: 'どやっ', it: 'faccia da "visto?"', file: 'doya', o: { face: 'orgoglioso', pose: 'muscoloso', aura: 'raggi', bg: 'giallo', anim: 'pop' } },
+  { w: 'きゅん', it: 'tuffo al cuore', file: 'kyun', o: { face: 'timido', pose: 'cuore', fx: 'cuoricini', bg: 'rosa', anim: 'battito' } },
+  { w: 'ちゅっ', it: 'smack!', file: 'chu', o: { face: 'bacio', pose: 'saluto', fx: 'cuoricini', bg: 'rosa', anim: 'battito' } },
+  { w: 'くるくる', it: 'girare girare', file: 'kurukuru', o: { face: 'ipnotizzato', pose: 'giro', bg: 'arcobaleno', anim: 'gira' } },
+  { w: 'ばたばた', it: 'di corsa, trafelato', file: 'batabata', o: { face: 'urlo', pose: 'corsa', anim: 'tremolio' } },
+  { w: 'きょろきょろ', it: 'guardarsi attorno', file: 'kyorokyoro', o: { face: 'curioso', pose: 'saluto', scene: 'cameretta', anim: 'gira' } },
+  { w: 'しーん', it: 'silenzio totale', file: 'shiin', o: { face: 'pokerface', bg: 'bianco', anim: 'ferma', font: 'mono', textStyle: 'auto' } },
+  { w: 'がーん', it: 'shock, mazzata', file: 'gaan', o: { face: 'ko', bg: 'grafite', anim: 'ferma', textStyle: 'memetop' } },
+  { w: 'ぼーっと', it: 'testa fra le nuvole', file: 'bootto', o: { face: 'annoiato', textStyle: 'nuvoletta', bg: 'azzurro', anim: 'ferma' } },
+];
 const FLUID = {
   fluida:  { label: 'Fluida (30 fps)',  delay: 3 },
   normale: { label: 'Normale (20 fps)', delay: 5 },
@@ -5507,6 +5556,24 @@ chipRow('petRow', PETS, 'pet');
 document.getElementById('bgTopC').oninput = e => { state.bgTop = e.target.value; state.bg = 'custom'; syncSel(); };
 document.getElementById('bgBotC').oninput = e => { state.bgBot = e.target.value; state.bg = 'custom'; syncSel(); };
 
+/* preset onomatopee: un tocco applica l'intera combinazione */
+{
+  const el = document.getElementById('onomaRow');
+  for (const p of ONOMATOPEE) {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = p.w;
+    b.title = p.it;
+    b.onclick = () => {
+      Object.assign(state, ONOMA_BASE, p.o, { text: p.w });
+      document.getElementById('txt').value = p.w;
+      document.getElementById('fuseSel').value = state.fuse;
+      syncSel(); renderThumbs();
+    };
+    el.appendChild(b);
+  }
+}
+
 function filterChars() {
   document.querySelectorAll('#chars .face-btn').forEach(b => {
     b.hidden = state.charGroup !== 'tutti' && (CHARS[b.dataset.v].group || 'altro') !== state.charGroup;
@@ -5769,6 +5836,7 @@ const I18N_JA = {
   'Codifico la GIF…': 'GIFに変換中…', 'Preparo…': 'じゅんびちゅう…',
 };
 Object.assign(I18N_JA, {
+  'Onomatopee 🇯🇵 (preset)': 'オノマトペ 🇯🇵（プリセット）',
   'Ambiente': '背景シーン', 'Pattern': 'パターン', 'Aura': 'オーラ', 'Compagno': 'おとも',
   'Colori personalizzati': 'カスタムカラー', 'Personalizzato 🎨': 'カスタム 🎨',
   'Città al tramonto': '夕暮れの街', 'Prato': '草原', 'Spiaggia': 'ビーチ', 'Monte Fuji': '富士山',
