@@ -20,9 +20,14 @@ Poi apri **http://localhost:8660** (funziona anche aprendo `index.html` direttam
 
 ## Cosa fa
 
-- **2 stili di disegno**: **Realistico 🎨** (default) — resa da action figure 3D: luci da studio, volumi, materiali (vinile, pelo, tessuto, gel), occhi lucidi con riflessi, ombre morbide, legno sul cartello — e **Kawaii 🍬** (piatto pastello)
-- **14 personaggi con le loro sagome originali**: Kirby, Pikachu (corpo a pera), Kabigon/Snorlax (testolina + pancione), Kuromi e My Melody (testona col cappuccio + corpicino), Jigglypuff, Eevee, Gengar (tutto spuntoni), Ditto (blob), Cinnamoroll (orecchie lunghe), Pompompurin, Totoro (ghianda), Doraemon (testa tonda + corpo con collare), Slime di Dragon Quest (goccia)
-- **15 facce**: sorridente, raggiante, innamorato, stelline, occhiolino, furbetto, timido, sorpreso, confuso, arrabbiato (💢), triste, disperato, annoiato, KO, assonnato (Zzz)
+- **Interfaccia bilingue** 🇮🇹 Italiano / 🇯🇵 日本語 (toggle in alto, memorizzato)
+- **2 stili di disegno**: **Realistico 🎨** (default) — resa da action figure 3D: luci da studio, volumi, materiali (vinile, pelo, tessuto, gel), occhi lucidi con riflessi, ombre morbide — e **Kawaii 🍬** (piatto pastello)
+- **123 personaggi** organizzati per gruppi (Pokémon, Sanrio, Ghibli, Giochi, Animali, Cibo & cose): dai 14 "storici" disegnati a mano (Kirby, Pikachu, Kabigon, Kuromi, Totoro, Doraemon…) a oltre 100 costruiti col sistema parametrico (forme + orecchie + code + pattern componibili)
+- **Fusioni** tra personaggi: scegli "Fusione con…" e il personaggio prende palette, orecchie e coda dell'altro (Totoro×Eevee, Kirby×Pikachu…)
+- **Il tuo Avatar ✨**: carnagione (6), pettinatura (9), colore capelli (8) e altezza (basso/medio/alto) — e funziona con tutte le facce, pose e cappelli
+- **23 facce**: le 15 storiche + estatico, diabolico, canterino, affamato (con bavetta), sospettoso, bacio (con cuoricino), gioia+lacrime, malaticcio
+- **7 tipi di cartello**: legno, lavagna (col gessetto), neon (bordo che pulsa), carta strappata con scotch, cartello stradale, targa d'oro, cuore
+- **5 caratteri tipografici**: tondo, elegante (serif), gessetto, marker, da macchina
 - **11 pose**: col cartello, saluta, balla, salto, corsa, seduto, in volo, muscoli 💪, cuoricino, giravolta, relax
 - **14 cappelli** + **6 accessori** (occhiali, sciarpa, papillon, baffi…)
 - **8 colori del corpo** ("Classico ⭐" usa la palette originale del personaggio; gli altri ricolorano chiunque)
@@ -36,7 +41,7 @@ Poi apri **http://localhost:8660** (funziona anche aprendo `index.html` direttam
 
 Tutto client-side (`index.html` + `real.js`), zero dipendenze:
 
-- Personaggi disegnati proceduralmente in **canvas** (spazio 500×500 scalato); ogni personaggio è definito in `CHAR_ART` (parti dietro/davanti alla palla + forma corpo alternativa); pose e facce sono componibili, i costumi si agganciano alla testa
+- Personaggi disegnati proceduralmente in **canvas** (spazio 500×500 scalato); i 14 storici sono definiti a mano in `CHAR_ART`, gli altri come **ricette parametriche** (`addChars`: forma da `P_SHAPES`, orecchie da `P_EARS`, code da `P_TAILS`, pattern da `P_MARKS`, palette derivata con `pal()`); pose e facce sono componibili, i costumi si agganciano alla testa
 - Tutte le animazioni sono periodiche in t∈[0,1) → loop perfetto
 - Encoder **GIF89a** scritto da zero: quantizzazione median-cut a 256 colori (istogramma RGB555) + dithering ordinato Bayer 4×4 + compressione LZW, loop infinito NETSCAPE2.0
 - `POST /save` salva una GIF/PNG in `samples/` (usato per i test)
